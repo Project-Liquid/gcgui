@@ -76,23 +76,6 @@ Wrap a React application into a native desktop app using Electron. Provides a mo
 
 ---
 
-## widgets and their functions 
-
-### number
-shows a number for a given datapoint (csv and crtd)
-### line plot 
-shows a line plot for a given datapoint over time (csv and crtd)
-### raw serial
-shows raw serial input over time (csv and crtd)
-### can interpreter (CAN)
-shows a bunch of data parsed from CAN. Separates messages by id and performs adjustments to match to a given unit of measurement
-### radio (currently CAN, plans to implement for csv as well)
-a dedicated interpreter to show only radio status (ie status and signal strength)
-### send 
-a serial monitor that is able to write to serial (output through serial)
-### key send
-like send, but hits enter after each keypress (keymapping capabilities)
-
 ## Getting Started: Development
 
 1. pnpm install
@@ -178,9 +161,3 @@ based on [this guide](https://github.com/marketplace/actions/electron-builder-ac
 
 ---
 
-Using HashRouter ensures navigation works properly in Electron without server configuration.
-Common Issues & Fixes
-Issue Cause Solution
-require is not defined Project is in ES module mode ("type": "module") Rename Electron files to .cjs or remove "type": "module" from package.json
-ERR_CONNECTION_REFUSED Dev server not running Ensure Vite starts, check port 5173, or increase wait-on timeout
-Electron opens empty window

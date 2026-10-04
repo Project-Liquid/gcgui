@@ -2,6 +2,7 @@
 
 Desktop application built with **Electron** and **React** (via Vite) for a fast, modern UI experience.
 
+**first time users!! read documentation in documentation folder!!! start with the users guide** 
 ---
 ## quickstart
 ### install 

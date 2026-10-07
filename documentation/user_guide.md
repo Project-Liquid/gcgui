@@ -15,6 +15,31 @@ this part will help users quickly install and run the application. it should als
 1. go to releases
 2. click on the relevant file for your OS (.exe for windows, etc)
 3. install and run app
+
+##### addendum: macos
+MacOS is famously picky about its applications. One day, when I'm rich, I'll pay for an xcode subscription that will allow me to publish apps that don't require this step. However, for now, here is the in-depth install instructions for MacOS:
+
+1. download the .dmg from releases
+2. double click the .dmg in your downloads
+3. click and drag "pitwall.app" into the applications folder in the window
+4. run the pitwall app in your applications. If it shows the error with the "app is damaged and cannot run": 
+5. DO NOT MOVE TO TRASH. (if you did click move to trash, go back to step 2). click "cancel" instead.
+6. go to settings > privacy and security and scroll down. 
+7. look for an option that says "pitwall.app is not a trusted developer" or something. There should be an open anyway button. You may first have to configure the setting above that, which says "Allow applications from..." and hit the dropdown that says "app store and known developers"
+
+7a. IF THAT DOESNT WORK, FOLLOW THE INSTRUCTIONS BELOW:
+
+8. open terminal. You can do this by finding it in launchpad, or by doing spotlight search (cmd+ space, then type "terminal")
+9. type in this command:
+```zsh
+	xattr -cr /Applications/Pitwall.app
+```
+note that "/Applications/Pitwall.app" can be replaced with any location you installed the app in. For most users, this is inside the applications folder. For others, you can open the .app's location in finder, then click and drag it into the terminal window to automatically type the path
+
+10. hit enter
+11. try running it again. It should work. 
+> do not follow these steps for every app that refuses to install on MacOS. these safeguards are here for a reason. I'm just telling you how to bypass them because my app is not malware. If you don't believe me, you can see the source code yourself.
+
 #### method 2: run from source (requires npm)
 1. download source files
 2. install nodejs and npm

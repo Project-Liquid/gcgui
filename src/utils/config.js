@@ -82,7 +82,8 @@ export function createConfig(shapes, panX, panY, zoom) {
       name: shape.name,
       dataField: shape.dataField,
       sendMessage: shape.sendMessage,
-      toggleEnabled: shape.toggleEnabled
+      toggleEnabled: shape.toggleEnabled,
+      url: shape.url
     })),
     view: {
       panX,
@@ -118,7 +119,8 @@ export function validateConfig(config) {
     name: typeof shape?.name === 'string' ? shape.name : '',
     dataField: typeof shape?.dataField === 'string' ? shape.dataField : '',
     sendMessage: typeof shape?.sendMessage === 'string' ? shape.sendMessage : '',
-    toggleEnabled: typeof shape?.toggleEnabled === 'boolean' ? shape.toggleEnabled : true
+    toggleEnabled: typeof shape?.toggleEnabled === 'boolean' ? shape.toggleEnabled : true,
+    url: typeof shape?.url === 'string' ? shape.url : ''
   }))
   
   // Validate view settings

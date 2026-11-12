@@ -1248,6 +1248,12 @@
   box-shadow: 0 0 0 2px rgba(113, 162, 255, 0.2);
 }
 
+.properties-hint {
+  font-size: 11px;
+  line-height: 1.45;
+  color: #8e97be;
+}
+
 .properties-check-row {
   display: flex;
   align-items: center;

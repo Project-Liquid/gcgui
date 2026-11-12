@@ -36,6 +36,13 @@ function Preview({ type }) {
           <div className="preview-sub">button</div>
         </div>
       )
+    case 'browser':
+      return (
+        <div className="preview-block number">
+          <div className="preview-title">🌐</div>
+          <div className="preview-sub">browser</div>
+        </div>
+      )
     default:
       return <div className="preview-block" />
   }

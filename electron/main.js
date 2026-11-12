@@ -847,8 +847,18 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
+            webviewTag: true,
             preload: path.join(__dirname, "preload.js"),
         },
+    });
+
+    // Browser widgets embed remote pages. Keep those guests unprivileged:
+    // no preload bridge, no Node, and only HTTP(S) URLs.
+    win.webContents.on("will-attach-webview", (event, webPreferences, params) => {
+        delete webPreferences.preload;
+        webPreferences.nodeIntegration = false;
+        webPreferences.contextIsolation = true;
+        if (!/^https?:\/\//i.test(params.src || "")) event.preventDefault();
     });
 
     if (!app.isPackaged) {

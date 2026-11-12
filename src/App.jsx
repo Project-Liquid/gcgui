@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 // import BMSStatusWidget from "./components/BMS";
+import BrowserWidget from "./components/BrowserWidget";
 import ControlBar from "./components/ControlBar";
 import Editor from "./components/Editor";
 import FullHistoryGraph from "./components/FullHistoryGraph";
@@ -14,6 +15,7 @@ import RawSerialWidget from "./components/RawSerialWidget";
 import SendWidget from "./components/SendWidget";
 import KeySendWidget from "./components/KeySendWidget";
 import KeyButtonWidget from "./components/KeyButtonWidget";
+import { normalizeBrowserUrl } from "./utils/browserUrl";
 import { createConfig, getDefaultConfig, loadConfig, saveConfig, validateConfig } from "./utils/config";
 import { emitClearAll } from "./utils/clearAll";
 import { parseCSVLog } from "./utils/csvLogParser";
@@ -25,6 +27,15 @@ const COMPONENTS = [
     { type: "number", label: "Number", w: 4, h: 3, defaultName: "Number Widget", defaultField: "speed" },
     { type: "line-plot", label: "Line Plot", w: 8, h: 4, defaultName: "Line Plot Widget", defaultField: "speed" },
     { type: "raw-serial", label: "Raw Serial", w: 8, h: 6, defaultName: "Raw Serial Widget", defaultField: "" },
+    {
+        type: "browser",
+        label: "Browser",
+        w: 12,
+        h: 8,
+        defaultName: "Browser",
+        defaultField: "",
+        defaultUrl: "https://play.tetris.com/",
+    },
     {
         type: "can-data",
         label: "can interpreter",
@@ -75,6 +86,9 @@ function applyWidgetDefaults(shape) {
     }
     if (defaults.defaultToggleEnabled !== undefined && (out.toggleEnabled === undefined || out.toggleEnabled === null)) {
         out.toggleEnabled = defaults.defaultToggleEnabled;
+    }
+    if (defaults.defaultUrl !== undefined && (out.url === undefined || out.url === null)) {
+        out.url = defaults.defaultUrl;
     }
     return out;
 }
@@ -213,6 +227,10 @@ function renderComponent(shape, runtimeState = {}) {
             );
         case "raw-serial":
             return <RawSerialWidget isRunning={runtimeState.isRunning} dataSource={runtimeState.dataSource} />;
+        case "browser":
+            // Remount when the configured URL changes so navigation/error
+            // state from the previous page does not leak into the new one.
+            return <BrowserWidget key={`browser-${shape.id}-${shape.url}`} shape={shape} />;
         case "can-data":
             return <CANDataDebugger />;
         // case "bms-status":
@@ -295,6 +313,7 @@ function App() {
         dataField: "",
         sendMessage: "",
         toggleEnabled: true,
+        url: "",
     });
 
     // replayIndexRef    — mutable position the loop reads/writes (avoids stale closures)
@@ -847,6 +866,7 @@ function App() {
                 dataField: component.defaultField,
                 sendMessage: component.defaultSendMessage ?? "",
                 toggleEnabled: component.defaultToggleEnabled ?? true,
+                url: component.defaultUrl ?? "",
             },
         ]);
         setSelectedId(id);
@@ -863,7 +883,7 @@ function App() {
         setContextMenu(menu => (menu?.shapeId === id ? null : menu));
         setPropertiesEditor(curr =>
             curr.shapeId === id
-                ? { open: false, shapeId: null, name: "", dataField: "", sendMessage: "", toggleEnabled: true }
+                ? { open: false, shapeId: null, name: "", dataField: "", sendMessage: "", toggleEnabled: true, url: "" }
                 : curr,
         );
         setSelectedId(curr => (curr === id ? null : curr));
@@ -879,11 +899,20 @@ function App() {
             dataField: shape.dataField || "",
             sendMessage: typeof shape.sendMessage === "string" ? shape.sendMessage : "",
             toggleEnabled: shape.toggleEnabled !== false,
+            url: typeof shape.url === "string" ? shape.url : "",
         });
     }
 
     function closePropertiesEditor() {
-        setPropertiesEditor({ open: false, shapeId: null, name: "", dataField: "", sendMessage: "", toggleEnabled: true });
+        setPropertiesEditor({
+            open: false,
+            shapeId: null,
+            name: "",
+            dataField: "",
+            sendMessage: "",
+            toggleEnabled: true,
+            url: "",
+        });
     }
 
     function applyPropertiesEditorChanges() {
@@ -894,6 +923,17 @@ function App() {
                 name: propertiesEditor.name.trim() || "Widget",
                 sendMessage: propertiesEditor.sendMessage ?? "",
                 toggleEnabled: propertiesEditor.toggleEnabled !== false,
+            });
+        } else if (editingShape?.type === "browser") {
+            const rawUrl = propertiesEditor.url ?? "";
+            const url = normalizeBrowserUrl(rawUrl);
+            if (rawUrl.trim() && !url) {
+                alert("Please enter a valid http:// or https:// URL.");
+                return;
+            }
+            onUpdateShape(propertiesEditor.shapeId, {
+                name: propertiesEditor.name.trim() || "Widget",
+                url,
             });
         } else {
             onUpdateShape(propertiesEditor.shapeId, {
@@ -960,6 +1000,7 @@ function App() {
 
     const editingShape = shapes.find(s => s.id === propertiesEditor.shapeId);
     const editingIsKeyButton = editingShape?.type === "key-button";
+    const editingIsBrowser = editingShape?.type === "browser";
 
     // ---------------------------------------------------------------------------
     // Render
@@ -1130,6 +1171,24 @@ function App() {
                                                 />
                                                 <span>Toggle (latch ON/OFF on press)</span>
                                             </label>
+                                        </>
+                                    ) : editingIsBrowser ? (
+                                        <>
+                                            <label htmlFor="widget-url">URL</label>
+                                            <input
+                                                id="widget-url"
+                                                type="text"
+                                                value={propertiesEditor.url}
+                                                placeholder="https://example.com"
+                                                spellCheck={false}
+                                                onChange={e =>
+                                                    setPropertiesEditor(curr => ({ ...curr, url: e.target.value }))
+                                                }
+                                            />
+                                            <div className="properties-hint">
+                                                HTTP and HTTPS pages are supported. Bare addresses are opened over
+                                                HTTPS; localhost and private network addresses use HTTP.
+                                            </div>
                                         </>
                                     ) : (
                                         <>

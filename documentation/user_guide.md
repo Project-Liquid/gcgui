@@ -109,6 +109,13 @@ shows raw serial input over time (csv and crtd)
 #### options
 - lock
     - locks the screen to the bottom. hit unlock to scroll freely.
+### browser
+embeds a web page in the dashboard, so you can keep a local or online dashboard, docs, or camera feed next to your data.
+#### options
+- URL
+    - the page to display. right-click the widget and choose Edit (or select it and press E) to change it.
+    - full `http://` and `https://` URLs work. bare addresses like `example.com` are opened over HTTPS, while `localhost` and private network addresses use HTTP.
+    - pages that require a login or open pop-up windows may not work inside the widget; open those in a regular browser instead.
 ### can interpreter (CAN)
 shows a bunch of data parsed from CAN. Separates messages by id and performs adjustments to match to a given unit of measurement
 ### radio (currently CAN, plans to implement for csv as well)

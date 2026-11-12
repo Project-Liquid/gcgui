@@ -1,0 +1,136 @@
+.browser-widget {
+    background: #11152f;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.browser-widget-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: #171c3d;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+}
+
+.browser-widget-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.browser-widget-url {
+    font-size: 10px;
+    color: #9aa3c7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.browser-widget-status {
+    font-size: 10px;
+    color: #7c84a8;
+    flex-shrink: 0;
+}
+
+.browser-widget-action {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    background: #232a55;
+    color: #d7dbff;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.browser-widget-action:hover:not(:disabled) {
+    background: #2d3668;
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.browser-widget-action:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.browser-widget-content {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    background: #ffffff;
+}
+
+.browser-widget-view {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.browser-widget-empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 16px;
+    text-align: center;
+    background: linear-gradient(180deg, #1a1f43, #11152f);
+    color: #aeb6da;
+}
+
+.browser-widget-empty-icon {
+    font-size: 26px;
+    line-height: 1;
+}
+
+.browser-widget-empty-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #eef2ff;
+}
+
+.browser-widget-empty-hint {
+    font-size: 11px;
+    line-height: 1.45;
+    color: #8e97be;
+    max-width: 300px;
+}
+
+.browser-widget-empty-url {
+    font-size: 10px;
+    color: #6f78a2;
+    word-break: break-all;
+    max-width: 320px;
+}
+
+.browser-widget-retry {
+    margin-top: 2px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: #232a55;
+    color: #d7dbff;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.browser-widget-retry:hover {
+    background: #2d3668;
+    border-color: rgba(59, 130, 246, 0.5);
+}

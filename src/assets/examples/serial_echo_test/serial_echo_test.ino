@@ -18,7 +18,11 @@ void setup() {
 }
 
 void loop() {
-  while (Serial.available() > 0) {
-    Serial.write(Serial.read());
-  }
+    if (Serial.available() > 0) {
+        // Read the incoming byte
+        char incomingByte = Serial.read();
+
+        // Echo the exact byte back to the serial port
+        Serial.write(incomingByte);
+      }
 }

@@ -14,16 +14,14 @@ export default function FormulaPreview({ formula, result }) {
     }
 
     return (
-        <math display="block" className="formula-preview-math">
-            <mrow>
-                {renderFormula(ast)}
-                {result != null && (
-                    <>
-                        <mo>=</mo>
-                        <mn>{result}</mn>
-                    </>
-                )}
-            </mrow>
-        </math>
+        <span className="formula-preview-math" role="math" aria-label={formula}>
+            {renderFormula(ast)}
+            {result != null && (
+                <>
+                    <span className="math-relation">=</span>
+                    <span className="math-number">{result}</span>
+                </>
+            )}
+        </span>
     );
 }

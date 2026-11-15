@@ -227,143 +227,128 @@ function calleeName(node) {
 function renderArgs(args) {
     return args.map((arg, index) => (
         <Fragment key={index}>
-            {index > 0 && <mo>,</mo>}
+            {index > 0 && <span className="math-punctuation">,</span>}
             {renderNode(arg)}
         </Fragment>
     ));
+}
+
+function renderFunctionCall(name, args) {
+    return (
+        <span className="math-function-call">
+            <span className="math-function">{name || "f"}</span>
+            <span className="math-punctuation">(</span>
+            {renderArgs(args)}
+            <span className="math-punctuation">)</span>
+        </span>
+    );
+}
+
+function renderRadical(symbol, content) {
+    return (
+        <span className="math-radical">
+            <span className="math-radical-symbol">{symbol}</span>
+            <span className="math-radicand">{content}</span>
+        </span>
+    );
+}
+
+function renderPower(base, exponent) {
+    return (
+        <span className="math-power">
+            {base}
+            <sup className="math-exponent">{exponent}</sup>
+        </span>
+    );
 }
 
 function renderCall(node) {
     const name = calleeName(node.callee);
 
     if (name === "sqrt" && node.args.length === 1) {
-        return <msqrt>{renderNode(node.args[0])}</msqrt>;
+        return renderRadical("√", renderNode(node.args[0]));
     }
     if (name === "cbrt" && node.args.length === 1) {
-        return (
-            <mroot>
-                {renderNode(node.args[0])}
-                <mn>3</mn>
-            </mroot>
-        );
+        return renderRadical("∛", renderNode(node.args[0]));
     }
     if (name === "abs" && node.args.length === 1) {
         return (
-            <mrow>
-                <mo>|</mo>
+            <span className="math-expression">
+                <span className="math-bar">|</span>
                 {renderNode(node.args[0])}
-                <mo>|</mo>
-            </mrow>
+                <span className="math-bar">|</span>
+            </span>
         );
     }
     if (name === "pow" && node.args.length === 2) {
-        return (
-            <msup>
-                {renderNode(node.args[0])}
-                {renderNode(node.args[1])}
-            </msup>
-        );
+        return renderPower(renderNode(node.args[0]), renderNode(node.args[1]));
     }
     if (name === "ln" && node.args.length === 1) {
         return (
-            <mrow>
-                <mi mathvariant="normal">ln</mi>
-                <mo>(</mo>
+            <span className="math-function-call">
+                <span className="math-function">ln</span>
+                <span className="math-punctuation">(</span>
                 {renderNode(node.args[0])}
-                <mo>)</mo>
-            </mrow>
+                <span className="math-punctuation">)</span>
+            </span>
         );
     }
 
-    return (
-        <mrow>
-            <mi mathvariant="normal">{name || "f"}</mi>
-            <mo>(</mo>
-            {renderArgs(node.args)}
-            <mo>)</mo>
-        </mrow>
-    );
+    return renderFunctionCall(name, node.args);
 }
 
 function renderNode(node) {
     switch (node.type) {
         case "number":
-            return <mn>{node.value}</mn>;
+            return <span className="math-number">{node.value}</span>;
 
         case "identifier":
-            if (node.name === "PI") return <mi>π</mi>;
-            if (node.name === "E") return <mi>e</mi>;
-            return <mi>{node.name}</mi>;
+            if (node.name === "PI") return <span className="math-identifier">π</span>;
+            if (node.name === "E") return <span className="math-identifier">e</span>;
+            return <span className="math-identifier">{node.name}</span>;
 
         case "member":
-            if (memberName(node) === "Math.PI") return <mi>π</mi>;
-            if (memberName(node) === "Math.E") return <mi>e</mi>;
-            return (
-                <mrow>
-                    {renderNode(node.object)}
-                    <mo>.</mo>
-                    <mi>{node.property}</mi>
-                </mrow>
-            );
+            if (memberName(node) === "Math.PI") return <span className="math-identifier">π</span>;
+            if (memberName(node) === "Math.E") return <span className="math-identifier">e</span>;
+            return <span className="math-identifier">{memberName(node)}</span>;
 
         case "group":
             return (
-                <mrow>
-                    <mo>(</mo>
+                <span className="math-expression">
+                    <span className="math-punctuation">(</span>
                     {renderNode(node.expression)}
-                    <mo>)</mo>
-                </mrow>
+                    <span className="math-punctuation">)</span>
+                </span>
             );
 
         case "unary":
             return (
-                <mrow>
-                    <mo>{node.op === "-" ? "−" : node.op}</mo>
+                <span className="math-expression">
+                    <span className="math-operator math-unary">{node.op === "-" ? "−" : node.op}</span>
                     {renderNode(node.operand)}
-                </mrow>
+                </span>
             );
 
         case "binary":
             if (node.op === "/") {
                 return (
-                    <mfrac>
-                        {renderNode(node.left)}
-                        {renderNode(node.right)}
-                    </mfrac>
+                    <span className="math-fraction">
+                        <span className="math-numerator">{renderNode(node.left)}</span>
+                        <span className="math-denominator">{renderNode(node.right)}</span>
+                    </span>
                 );
             }
-            if (node.op === "**") {
-                return (
-                    <msup>
-                        {renderNode(node.left)}
-                        {renderNode(node.right)}
-                    </msup>
-                );
-            }
-            if (node.op === "*") {
-                return (
-                    <mrow>
-                        {renderNode(node.left)}
-                        <mo>·</mo>
-                        {renderNode(node.right)}
-                    </mrow>
-                );
-            }
-            if (node.op === "%") {
-                return (
-                    <mrow>
-                        {renderNode(node.left)}
-                        <mo>mod</mo>
-                        {renderNode(node.right)}
-                    </mrow>
-                );
+            if (node.op === "**" || node.op === "^") {
+                return renderPower(renderNode(node.left), renderNode(node.right));
             }
             return (
-                <mrow>
+                <span className="math-expression">
                     {renderNode(node.left)}
-                    <mo>{node.op === "-" ? "−" : node.op}</mo>
+                    <span className="math-operator">
+                        {node.op === "*" ? "·" : node.op === "%" ? "mod" : node.op === "-" ? "−" : node.op}
+                    </span>
                     {renderNode(node.right)}
-                </mrow>
+                </span>
             );
 
         case "call":
@@ -371,11 +356,11 @@ function renderNode(node) {
 
         case "arrow":
             return (
-                <mrow>
-                    <mi>{node.param}</mi>
-                    <mo>↦</mo>
+                <span className="math-expression">
+                    <span className="math-identifier">{node.param}</span>
+                    <span className="math-operator">↦</span>
                     {renderNode(node.body)}
-                </mrow>
+                </span>
             );
 
         default:

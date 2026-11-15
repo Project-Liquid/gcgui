@@ -3,7 +3,7 @@ import "../App.css";
 import { useCANDataHook } from "./parsers/canproc";
 import { useCSVDataHook } from "./parsers/csvproc";
 import { getCsvDisplayName, resolveCsvCanonical } from "../utils/csvAliases";
-import { computeInputRate, derivative, makeInputSignal } from "../utils/dischargeMath";
+import { computeInputRate, derivative, makeInputSignal, normalizeFormulaSyntax } from "../utils/dischargeMath";
 import FormulaPreview from "./FormulaPreview";
 
 export const DEFAULT_DISCHARGE_FORMULA = "a + b + c + d + e";
@@ -181,7 +181,7 @@ function compileFormula(formula) {
             "d",
             "e",
             ...FORMULA_HELPER_NAMES,
-            `"use strict"; return (${formula});`,
+            `"use strict"; return (${normalizeFormulaSyntax(formula)});`,
         );
         return { evaluate, error: null };
     } catch (error) {

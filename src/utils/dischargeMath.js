@@ -17,6 +17,13 @@ export function computeInputRate(previous, sample) {
     return (sample.value - previous.value) / dt;
 }
 
+// Formula authors commonly write a^2 for exponentiation, but JavaScript
+// treats ^ as bitwise XOR. Translate carets to ** so the evaluated value
+// matches the power shown in the preview.
+export function normalizeFormulaSyntax(source) {
+    return source.replace(/\^/g, "**");
+}
+
 // Numerical derivative. derivative(a) returns the time derivative of input A;
 // derivative(fn, x) differentiates a function at x, and derivative(fn) returns
 // a reusable derivative function.

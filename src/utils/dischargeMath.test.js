@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeInputRate, derivative, makeInputSignal } from "./dischargeMath";
+import { computeInputRate, derivative, makeInputSignal, normalizeFormulaSyntax } from "./dischargeMath";
 
 const previousSample = {
     key: "can:RPM",
@@ -32,6 +32,16 @@ describe("computeInputRate", () => {
         const previous = { ...previousSample, rate: 5 };
         const sample = { ...previous, value: 130 };
         expect(computeInputRate(previous, sample)).toBe(5);
+    });
+});
+
+describe("normalizeFormulaSyntax", () => {
+    it("turns formula-style carets into JavaScript exponentiation", () => {
+        expect(normalizeFormulaSyntax("a^2 + pow(b, 2)")).toBe("a**2 + pow(b, 2)");
+    });
+
+    it("leaves ** exponentiation untouched", () => {
+        expect(normalizeFormulaSyntax("a ** 2")).toBe("a ** 2");
     });
 });
 

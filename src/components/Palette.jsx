@@ -9,6 +9,13 @@ function Preview({ type }) {
           <div className="preview-sub">speed</div>
         </div>
       )
+    case 'discharge-calc':
+      return (
+        <div className="preview-block number">
+          <div className="preview-title">a+b+c</div>
+          <div className="preview-sub">calc</div>
+        </div>
+      )
     case 'line-plot':
       return (
         <div className="preview-block line">

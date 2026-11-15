@@ -3,6 +3,7 @@ import "./App.css";
 // import BMSStatusWidget from "./components/BMS";
 import BrowserWidget from "./components/BrowserWidget";
 import ControlBar from "./components/ControlBar";
+import DischargeCalcWidget, { DischargeCalcSettings } from "./components/DischargeCalcWidget";
 import Editor from "./components/Editor";
 import FullHistoryGraph from "./components/FullHistoryGraph";
 import LinePlotWidget from "./components/LinePlotWidget";
@@ -25,6 +26,19 @@ const GRID_SIZE = 28;
 
 const COMPONENTS = [
     { type: "number", label: "Number", w: 4, h: 3, defaultName: "Number Widget", defaultField: "speed" },
+    {
+        type: "discharge-calc",
+        label: "Discharge Calc",
+        w: 4,
+        h: 3,
+        defaultName: "Discharge Calc Widget",
+        defaultField: "",
+        defaultInputA: "RPM",
+        defaultInputB: "Throttle",
+        defaultInputC: "EngineTemp",
+        defaultConstantD: 0,
+        defaultConstantE: 0,
+    },
     { type: "line-plot", label: "Line Plot", w: 8, h: 4, defaultName: "Line Plot Widget", defaultField: "speed" },
     { type: "raw-serial", label: "Raw Serial", w: 8, h: 6, defaultName: "Raw Serial Widget", defaultField: "" },
     {
@@ -73,6 +87,28 @@ function isTypingTarget(target) {
     );
 }
 
+function emptyPropertiesEditor() {
+    return {
+        open: false,
+        shapeId: null,
+        name: "",
+        dataField: "",
+        sendMessage: "",
+        toggleEnabled: true,
+        url: "",
+        inputA: "",
+        inputB: "",
+        inputC: "",
+        constantD: 0,
+        constantE: 0,
+    };
+}
+
+function toFiniteNumber(value, fallback = 0) {
+    const numeric = typeof value === "number" ? value : Number.parseFloat(value);
+    return Number.isFinite(numeric) ? numeric : fallback;
+}
+
 function applyWidgetDefaults(shape) {
     const defaults = COMPONENTS.find(c => c.type === shape.type);
     if (!defaults) return shape;
@@ -89,6 +125,21 @@ function applyWidgetDefaults(shape) {
     }
     if (defaults.defaultUrl !== undefined && (out.url === undefined || out.url === null)) {
         out.url = defaults.defaultUrl;
+    }
+    if (defaults.defaultInputA !== undefined && (out.inputA === undefined || out.inputA === null || out.inputA === "")) {
+        out.inputA = defaults.defaultInputA;
+    }
+    if (defaults.defaultInputB !== undefined && (out.inputB === undefined || out.inputB === null || out.inputB === "")) {
+        out.inputB = defaults.defaultInputB;
+    }
+    if (defaults.defaultInputC !== undefined && (out.inputC === undefined || out.inputC === null || out.inputC === "")) {
+        out.inputC = defaults.defaultInputC;
+    }
+    if (defaults.defaultConstantD !== undefined && (out.constantD === undefined || out.constantD === null)) {
+        out.constantD = defaults.defaultConstantD;
+    }
+    if (defaults.defaultConstantE !== undefined && (out.constantE === undefined || out.constantE === null)) {
+        out.constantE = defaults.defaultConstantE;
     }
     return out;
 }
@@ -213,6 +264,10 @@ function renderComponent(shape, runtimeState = {}) {
     switch (shape.type) {
         case "number":
             return <NumberWidget shape={shape} mode={mode} csvAliases={csvAliases} onCsvAliasChange={onCsvAliasChange} />;
+        case "discharge-calc":
+            return (
+                <DischargeCalcWidget shape={shape} mode={mode} csvAliases={csvAliases} onCsvAliasChange={onCsvAliasChange} />
+            );
         case "line-plot":
             return (
                 <LinePlotWidget
@@ -306,15 +361,7 @@ function App() {
     const [, setReplayStatus] = useState({ isPlaying: false, completed: false });
     const [layoutLocked, setLayoutLocked] = useState(false);
     const [contextMenu, setContextMenu] = useState(null);
-    const [propertiesEditor, setPropertiesEditor] = useState({
-        open: false,
-        shapeId: null,
-        name: "",
-        dataField: "",
-        sendMessage: "",
-        toggleEnabled: true,
-        url: "",
-    });
+    const [propertiesEditor, setPropertiesEditor] = useState(emptyPropertiesEditor);
 
     // replayIndexRef    — mutable position the loop reads/writes (avoids stale closures)
     // replayCurrentIndex — state mirror of the above, drives the seek bar UI
@@ -867,6 +914,11 @@ function App() {
                 sendMessage: component.defaultSendMessage ?? "",
                 toggleEnabled: component.defaultToggleEnabled ?? true,
                 url: component.defaultUrl ?? "",
+                inputA: component.defaultInputA ?? "",
+                inputB: component.defaultInputB ?? "",
+                inputC: component.defaultInputC ?? "",
+                constantD: component.defaultConstantD ?? 0,
+                constantE: component.defaultConstantE ?? 0,
             },
         ]);
         setSelectedId(id);
@@ -881,11 +933,7 @@ function App() {
         if (layoutLocked || !id) return;
         setShapes(arr => arr.filter(s => s.id !== id));
         setContextMenu(menu => (menu?.shapeId === id ? null : menu));
-        setPropertiesEditor(curr =>
-            curr.shapeId === id
-                ? { open: false, shapeId: null, name: "", dataField: "", sendMessage: "", toggleEnabled: true, url: "" }
-                : curr,
-        );
+        setPropertiesEditor(curr => (curr.shapeId === id ? emptyPropertiesEditor() : curr));
         setSelectedId(curr => (curr === id ? null : curr));
     }
 
@@ -900,19 +948,16 @@ function App() {
             sendMessage: typeof shape.sendMessage === "string" ? shape.sendMessage : "",
             toggleEnabled: shape.toggleEnabled !== false,
             url: typeof shape.url === "string" ? shape.url : "",
+            inputA: typeof shape.inputA === "string" ? shape.inputA : "",
+            inputB: typeof shape.inputB === "string" ? shape.inputB : "",
+            inputC: typeof shape.inputC === "string" ? shape.inputC : "",
+            constantD: toFiniteNumber(shape.constantD),
+            constantE: toFiniteNumber(shape.constantE),
         });
     }
 
     function closePropertiesEditor() {
-        setPropertiesEditor({
-            open: false,
-            shapeId: null,
-            name: "",
-            dataField: "",
-            sendMessage: "",
-            toggleEnabled: true,
-            url: "",
-        });
+        setPropertiesEditor(emptyPropertiesEditor());
     }
 
     function applyPropertiesEditorChanges() {
@@ -934,6 +979,15 @@ function App() {
             onUpdateShape(propertiesEditor.shapeId, {
                 name: propertiesEditor.name.trim() || "Widget",
                 url,
+            });
+        } else if (editingShape?.type === "discharge-calc") {
+            onUpdateShape(propertiesEditor.shapeId, {
+                name: propertiesEditor.name.trim() || "Discharge Calc Widget",
+                inputA: propertiesEditor.inputA || "",
+                inputB: propertiesEditor.inputB || "",
+                inputC: propertiesEditor.inputC || "",
+                constantD: toFiniteNumber(propertiesEditor.constantD),
+                constantE: toFiniteNumber(propertiesEditor.constantE),
             });
         } else {
             onUpdateShape(propertiesEditor.shapeId, {
@@ -1001,6 +1055,7 @@ function App() {
     const editingShape = shapes.find(s => s.id === propertiesEditor.shapeId);
     const editingIsKeyButton = editingShape?.type === "key-button";
     const editingIsBrowser = editingShape?.type === "browser";
+    const editingIsDischargeCalc = editingShape?.type === "discharge-calc";
 
     // ---------------------------------------------------------------------------
     // Render
@@ -1190,6 +1245,13 @@ function App() {
                                                 HTTPS; localhost and private network addresses use HTTP.
                                             </div>
                                         </>
+                                    ) : editingIsDischargeCalc ? (
+                                        <DischargeCalcSettings
+                                            editor={propertiesEditor}
+                                            onChange={setPropertiesEditor}
+                                            mode={protocol === "csv" ? "csv" : "can"}
+                                            csvAliases={csvAliases}
+                                        />
                                     ) : (
                                         <>
                                             <label htmlFor="widget-data-field">Data Field</label>

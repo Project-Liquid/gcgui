@@ -1233,7 +1233,8 @@
   letter-spacing: 0.2px;
 }
 
-.properties-form input {
+.properties-form input,
+.properties-form select {
   height: 38px;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -1243,7 +1244,12 @@
   outline: none;
 }
 
-.properties-form input:focus {
+.properties-form select {
+  cursor: pointer;
+}
+
+.properties-form input:focus,
+.properties-form select:focus {
   border-color: rgba(113, 162, 255, 0.8);
   box-shadow: 0 0 0 2px rgba(113, 162, 255, 0.2);
 }

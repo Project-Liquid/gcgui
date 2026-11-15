@@ -83,7 +83,12 @@ export function createConfig(shapes, panX, panY, zoom) {
       dataField: shape.dataField,
       sendMessage: shape.sendMessage,
       toggleEnabled: shape.toggleEnabled,
-      url: shape.url
+      url: shape.url,
+      inputA: shape.inputA,
+      inputB: shape.inputB,
+      inputC: shape.inputC,
+      constantD: shape.constantD,
+      constantE: shape.constantE
     })),
     view: {
       panX,
@@ -120,7 +125,12 @@ export function validateConfig(config) {
     dataField: typeof shape?.dataField === 'string' ? shape.dataField : '',
     sendMessage: typeof shape?.sendMessage === 'string' ? shape.sendMessage : '',
     toggleEnabled: typeof shape?.toggleEnabled === 'boolean' ? shape.toggleEnabled : true,
-    url: typeof shape?.url === 'string' ? shape.url : ''
+    url: typeof shape?.url === 'string' ? shape.url : '',
+    inputA: typeof shape?.inputA === 'string' ? shape.inputA : '',
+    inputB: typeof shape?.inputB === 'string' ? shape.inputB : '',
+    inputC: typeof shape?.inputC === 'string' ? shape.inputC : '',
+    constantD: typeof shape?.constantD === 'number' && Number.isFinite(shape.constantD) ? shape.constantD : 0,
+    constantE: typeof shape?.constantE === 'number' && Number.isFinite(shape.constantE) ? shape.constantE : 0
   }))
   
   // Validate view settings

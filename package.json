@@ -1,6 +1,6 @@
 {
     "name": "gcgui",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "description": "ground control GUI - An Electron app for reading information over serial",
     "author": "Yale Project Liquid | Yale Undergraduate Aerospace Association",
     "main": "electron/main.js",

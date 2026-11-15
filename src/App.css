@@ -1207,6 +1207,8 @@
 
 .properties-modal {
   width: min(420px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   background: #0d1230;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
@@ -1276,6 +1278,33 @@
 
 .properties-preview-error {
   color: #ff9a9a;
+}
+
+.formula-preview-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: #101636;
+  overflow-x: auto;
+}
+
+.formula-preview-math {
+  font-size: 19px;
+  color: #eef2ff;
+}
+
+.formula-preview-fallback {
+  display: block;
+  width: 100%;
+  color: #eef2ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .properties-check-row {

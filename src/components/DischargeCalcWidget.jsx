@@ -3,6 +3,7 @@ import "../App.css";
 import { useCANDataHook } from "./parsers/canproc";
 import { useCSVDataHook } from "./parsers/csvproc";
 import { getCsvDisplayName, resolveCsvCanonical } from "../utils/csvAliases";
+import FormulaPreview from "./FormulaPreview";
 
 export const DEFAULT_DISCHARGE_FORMULA = "a + b + c + d + e";
 
@@ -231,10 +232,9 @@ export function DischargeCalcSettings({ editor, onChange, mode = "can", csvAlias
         typeof editor.formula === "string" && editor.formula.trim() ? editor.formula : DEFAULT_DISCHARGE_FORMULA;
     const compiledFormula = useMemo(() => compileFormula(formula), [formula]);
     const preview = evaluateCompiledFormula(compiledFormula, previewValues);
-    let previewText;
+    let previewText = null;
     if (preview.error) previewText = `Formula error: ${preview.error}`;
-    else if (preview.value != null) previewText = `Preview with current values: ${formatResult(preview.value)}`;
-    else previewText = "Preview with current values: waiting for input data";
+    else if (preview.value == null) previewText = "Preview: waiting for input data.";
 
     return (
         <>
@@ -276,15 +276,22 @@ export function DischargeCalcSettings({ editor, onChange, mode = "can", csvAlias
                 spellCheck={false}
                 onChange={event => setValue({ formula: event.target.value })}
             />
-            <div className="properties-hint">
-                Sample: <code>sqrt(a) + b * c + d - e</code>
+            <div className="formula-preview-box">
+                <FormulaPreview
+                    formula={formula}
+                    result={preview.value != null ? formatResult(preview.value) : null}
+                />
             </div>
             <div className="properties-hint">
                 Inputs are <code>a</code>, <code>b</code>, <code>c</code>; constants are <code>d</code>,{" "}
                 <code>e</code>. Math helpers such as <code>sqrt(a)</code>, <code>pow(a, 2)</code> and{" "}
                 <code>derivative(x =&gt; x * x, a)</code> are available.
             </div>
-            <div className={`properties-hint${preview.error ? " properties-preview-error" : ""}`}>{previewText}</div>
+            {previewText && (
+                <div className={`properties-hint${preview.error ? " properties-preview-error" : ""}`}>
+                    {previewText}
+                </div>
+            )}
         </>
     );
 }

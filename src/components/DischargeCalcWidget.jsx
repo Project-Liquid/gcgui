@@ -1,8 +1,10 @@
-import { Fragment } from "react";
+import { Fragment, useMemo } from "react";
 import "../App.css";
 import { useCANDataHook } from "./parsers/canproc";
 import { useCSVDataHook } from "./parsers/csvproc";
 import { getCsvDisplayName, resolveCsvCanonical } from "../utils/csvAliases";
+
+export const DEFAULT_DISCHARGE_FORMULA = "a + b + c + d + e";
 
 const CAN_FALLBACK_FIELDS = ["RPM", "Throttle", "EngineTemp", "OilPressure", "Voltage", "Current", "Temperature", "SOC"];
 
@@ -58,10 +60,92 @@ function formatResult(value) {
     return String(Number.parseFloat(value.toFixed(6)));
 }
 
+// Numerical derivative. Call derivative(fn, x) for the value at x, or
+// derivative(fn) to get a reusable derivative function.
+function derivative(fn, x, step = 1e-4) {
+    if (typeof fn !== "function") return NaN;
+    const h = Number.isFinite(step) && step !== 0 ? Math.abs(step) : 1e-4;
+    const df = value => (fn(value + h) - fn(value - h)) / (2 * h);
+    return x === undefined ? df : df(x);
+}
+
+// Math helpers are exposed directly so formulas can use sqrt(a) as well as
+// Math.sqrt(a). "derivative" is available for numerical differentiation.
+const FORMULA_HELPERS = {
+    Math,
+    sqrt: Math.sqrt,
+    cbrt: Math.cbrt,
+    pow: Math.pow,
+    abs: Math.abs,
+    min: Math.min,
+    max: Math.max,
+    sin: Math.sin,
+    cos: Math.cos,
+    tan: Math.tan,
+    asin: Math.asin,
+    acos: Math.acos,
+    atan: Math.atan,
+    atan2: Math.atan2,
+    log: Math.log,
+    log10: Math.log10,
+    log2: Math.log2,
+    exp: Math.exp,
+    floor: Math.floor,
+    ceil: Math.ceil,
+    round: Math.round,
+    sign: Math.sign,
+    trunc: Math.trunc,
+    hypot: Math.hypot,
+    PI: Math.PI,
+    E: Math.E,
+    derivative,
+};
+const FORMULA_HELPER_NAMES = Object.keys(FORMULA_HELPERS);
+const FORMULA_HELPER_VALUES = FORMULA_HELPER_NAMES.map(name => FORMULA_HELPERS[name]);
+
+function compileFormula(formula) {
+    try {
+        const evaluate = new Function(
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            ...FORMULA_HELPER_NAMES,
+            `"use strict"; return (${formula});`,
+        );
+        return { evaluate, error: null };
+    } catch (error) {
+        return { evaluate: null, error: error instanceof Error ? error.message : String(error) };
+    }
+}
+
+function evaluateCompiledFormula(compiled, values) {
+    if (!compiled.evaluate) return { value: null, error: compiled.error };
+    try {
+        // Missing inputs are NaN so a formula that ignores them still works,
+        // while a formula that uses them naturally produces no result.
+        const raw = compiled.evaluate(
+            values.a ?? NaN,
+            values.b ?? NaN,
+            values.c ?? NaN,
+            values.d,
+            values.e,
+            ...FORMULA_HELPER_VALUES,
+        );
+        const numeric = typeof raw === "number" ? raw : Number(raw);
+        return { value: Number.isFinite(numeric) ? numeric : null, error: null };
+    } catch (error) {
+        return { value: null, error: error instanceof Error ? error.message : String(error) };
+    }
+}
+
 export default function DischargeCalcWidget({ shape, mode = "can", csvAliases = DEFAULT_ALIASES }) {
     const { canData } = useCANDataHook();
     const { csvData } = useCSVDataHook();
     const isCSV = mode === "csv";
+    const formula = typeof shape.formula === "string" && shape.formula.trim() ? shape.formula : DEFAULT_DISCHARGE_FORMULA;
+    const compiledFormula = useMemo(() => compileFormula(formula), [formula]);
 
     if (mode !== "can" && mode !== "csv") {
         return (
@@ -83,22 +167,21 @@ export default function DischargeCalcWidget({ shape, mode = "can", csvAliases = 
     const inputB = effectiveField(shape.inputB);
     const inputC = effectiveField(shape.inputC);
 
-    // Placeholder formula inputs. Replace the calculation below with the real
-    // discharge formula; the inputs and constants already come from settings.
     const a = readFieldValue(mode, inputA, canData, csvData);
     const b = readFieldValue(mode, inputB, canData, csvData);
     const c = readFieldValue(mode, inputC, canData, csvData);
     const d = toConstant(shape.constantD);
     const e = toConstant(shape.constantE);
 
-    // TODO: replace this placeholder sum with the real discharge formula.
-    const result = a != null && b != null && c != null ? a + b + c + d + e : null;
-    const currentValue = result == null ? "N/A" : formatResult(result);
+    const evaluation = evaluateCompiledFormula(compiledFormula, { a, b, c, d, e });
+    const currentValue = evaluation.value != null ? formatResult(evaluation.value) : evaluation.error ? "ERR" : "N/A";
 
     return (
         <div className="number-widget fill">
             <div className="widget-name">{shape.name || "Discharge Calc Widget"}</div>
-            <div className="number-widget-value">{currentValue}</div>
+            <div className="number-widget-value" title={evaluation.error || undefined}>
+                {currentValue}
+            </div>
         </div>
     );
 }
@@ -137,6 +220,22 @@ export function DischargeCalcSettings({ editor, onChange, mode = "can", csvAlias
     };
     const setValue = patch => onChange(current => ({ ...current, ...patch }));
 
+    const previewValues = {
+        a: readFieldValue(mode, effectiveField(editor.inputA), canData, csvData),
+        b: readFieldValue(mode, effectiveField(editor.inputB), canData, csvData),
+        c: readFieldValue(mode, effectiveField(editor.inputC), canData, csvData),
+        d: toConstant(editor.constantD),
+        e: toConstant(editor.constantE),
+    };
+    const formula =
+        typeof editor.formula === "string" && editor.formula.trim() ? editor.formula : DEFAULT_DISCHARGE_FORMULA;
+    const compiledFormula = useMemo(() => compileFormula(formula), [formula]);
+    const preview = evaluateCompiledFormula(compiledFormula, previewValues);
+    let previewText;
+    if (preview.error) previewText = `Formula error: ${preview.error}`;
+    else if (preview.value != null) previewText = `Preview with current values: ${formatResult(preview.value)}`;
+    else previewText = "Preview with current values: waiting for input data";
+
     return (
         <>
             {inputRows.map(row => (
@@ -167,10 +266,25 @@ export function DischargeCalcSettings({ editor, onChange, mode = "can", csvAlias
                     />
                 </Fragment>
             ))}
+            <label htmlFor="widget-formula">Formula (JavaScript)</label>
+            <input
+                id="widget-formula"
+                type="text"
+                className="properties-formula-input"
+                value={editor.formula ?? DEFAULT_DISCHARGE_FORMULA}
+                placeholder={DEFAULT_DISCHARGE_FORMULA}
+                spellCheck={false}
+                onChange={event => setValue({ formula: event.target.value })}
+            />
             <div className="properties-hint">
-                Inputs A, B and C read the selected data fields. Constants D and E are fixed values. Placeholder
-                formula: a + b + c + d + e.
+                Sample: <code>sqrt(a) + b * c + d - e</code>
             </div>
+            <div className="properties-hint">
+                Inputs are <code>a</code>, <code>b</code>, <code>c</code>; constants are <code>d</code>,{" "}
+                <code>e</code>. Math helpers such as <code>sqrt(a)</code>, <code>pow(a, 2)</code> and{" "}
+                <code>derivative(x =&gt; x * x, a)</code> are available.
+            </div>
+            <div className={`properties-hint${preview.error ? " properties-preview-error" : ""}`}>{previewText}</div>
         </>
     );
 }

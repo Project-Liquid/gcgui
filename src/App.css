@@ -1260,6 +1260,24 @@
   color: #8e97be;
 }
 
+.properties-formula-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.properties-hint code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  color: #c8d2ff;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+
+.properties-preview-error {
+  color: #ff9a9a;
+}
+
 .properties-check-row {
   display: flex;
   align-items: center;

@@ -3,7 +3,10 @@ import "./App.css";
 // import BMSStatusWidget from "./components/BMS";
 import BrowserWidget from "./components/BrowserWidget";
 import ControlBar from "./components/ControlBar";
-import DischargeCalcWidget, { DischargeCalcSettings } from "./components/DischargeCalcWidget";
+import DischargeCalcWidget, {
+    DEFAULT_DISCHARGE_FORMULA,
+    DischargeCalcSettings,
+} from "./components/DischargeCalcWidget";
 import Editor from "./components/Editor";
 import FullHistoryGraph from "./components/FullHistoryGraph";
 import LinePlotWidget from "./components/LinePlotWidget";
@@ -38,6 +41,7 @@ const COMPONENTS = [
         defaultInputC: "EngineTemp",
         defaultConstantD: 0,
         defaultConstantE: 0,
+        defaultFormula: DEFAULT_DISCHARGE_FORMULA,
     },
     { type: "line-plot", label: "Line Plot", w: 8, h: 4, defaultName: "Line Plot Widget", defaultField: "speed" },
     { type: "raw-serial", label: "Raw Serial", w: 8, h: 6, defaultName: "Raw Serial Widget", defaultField: "" },
@@ -101,6 +105,7 @@ function emptyPropertiesEditor() {
         inputC: "",
         constantD: 0,
         constantE: 0,
+        formula: DEFAULT_DISCHARGE_FORMULA,
     };
 }
 
@@ -140,6 +145,12 @@ function applyWidgetDefaults(shape) {
     }
     if (defaults.defaultConstantE !== undefined && (out.constantE === undefined || out.constantE === null)) {
         out.constantE = defaults.defaultConstantE;
+    }
+    if (
+        defaults.defaultFormula !== undefined &&
+        (out.formula === undefined || out.formula === null || out.formula === "")
+    ) {
+        out.formula = defaults.defaultFormula;
     }
     return out;
 }
@@ -919,6 +930,7 @@ function App() {
                 inputC: component.defaultInputC ?? "",
                 constantD: component.defaultConstantD ?? 0,
                 constantE: component.defaultConstantE ?? 0,
+                formula: component.defaultFormula ?? "",
             },
         ]);
         setSelectedId(id);
@@ -953,6 +965,10 @@ function App() {
             inputC: typeof shape.inputC === "string" ? shape.inputC : "",
             constantD: toFiniteNumber(shape.constantD),
             constantE: toFiniteNumber(shape.constantE),
+            formula:
+                typeof shape.formula === "string" && shape.formula.trim()
+                    ? shape.formula
+                    : DEFAULT_DISCHARGE_FORMULA,
         });
     }
 
@@ -988,6 +1004,10 @@ function App() {
                 inputC: propertiesEditor.inputC || "",
                 constantD: toFiniteNumber(propertiesEditor.constantD),
                 constantE: toFiniteNumber(propertiesEditor.constantE),
+                formula:
+                    typeof propertiesEditor.formula === "string" && propertiesEditor.formula.trim()
+                        ? propertiesEditor.formula
+                        : DEFAULT_DISCHARGE_FORMULA,
             });
         } else {
             onUpdateShape(propertiesEditor.shapeId, {

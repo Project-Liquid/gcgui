@@ -88,7 +88,8 @@ export function createConfig(shapes, panX, panY, zoom) {
       inputB: shape.inputB,
       inputC: shape.inputC,
       constantD: shape.constantD,
-      constantE: shape.constantE
+      constantE: shape.constantE,
+      formula: shape.formula
     })),
     view: {
       panX,
@@ -130,7 +131,8 @@ export function validateConfig(config) {
     inputB: typeof shape?.inputB === 'string' ? shape.inputB : '',
     inputC: typeof shape?.inputC === 'string' ? shape.inputC : '',
     constantD: typeof shape?.constantD === 'number' && Number.isFinite(shape.constantD) ? shape.constantD : 0,
-    constantE: typeof shape?.constantE === 'number' && Number.isFinite(shape.constantE) ? shape.constantE : 0
+    constantE: typeof shape?.constantE === 'number' && Number.isFinite(shape.constantE) ? shape.constantE : 0,
+    formula: typeof shape?.formula === 'string' ? shape.formula : ''
   }))
   
   // Validate view settings

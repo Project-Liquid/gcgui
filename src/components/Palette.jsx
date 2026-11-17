@@ -9,6 +9,13 @@ function Preview({ type }) {
           <div className="preview-sub">speed</div>
         </div>
       )
+    case 'bitfield':
+      return (
+        <div className="preview-block number">
+          <div className="preview-title">1010</div>
+          <div className="preview-sub">bits</div>
+        </div>
+      )
     case 'discharge-calc':
       return (
         <div className="preview-block number">

@@ -1046,6 +1046,116 @@
   text-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 
+.bitfield-widget {
+  background: linear-gradient(180deg, #1a1f43, #11152f);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  gap: 6px;
+}
+
+.bitfield-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bitfield-binary {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: #8fb3ff;
+  letter-spacing: 0.6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bitfield-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  color: #7c84a8;
+  font-size: 12px;
+  font-style: italic;
+  text-align: center;
+}
+
+.bitfield-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 2px 0;
+  padding-right: 2px;
+}
+
+.bitfield-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.bitfield-row.active {
+  border-color: rgba(76, 175, 80, 0.55);
+  background: rgba(76, 175, 80, 0.12);
+}
+
+.bitfield-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4b5069;
+  flex-shrink: 0;
+}
+
+.bitfield-row.active .bitfield-dot {
+  background: #4caf50;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.7);
+}
+
+.bitfield-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+  color: #b6bdd8;
+}
+
+.bitfield-row.active .bitfield-name {
+  color: #e6ffe6;
+}
+
+.bitfield-index {
+  flex-shrink: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 9px;
+  color: #6f779b;
+}
+
+.bitfield-bool {
+  width: 34px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 10px;
+  font-weight: 700;
+  color: #7c84a8;
+}
+
+.bitfield-bool.active {
+  color: #73d97a;
+}
+
 .line-widget-canvas {
   margin-top: 10px;
   flex: 1;

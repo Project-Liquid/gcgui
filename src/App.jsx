@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 // import BMSStatusWidget from "./components/BMS";
+import BitfieldWidget from "./components/BitfieldWidget";
 import BrowserWidget from "./components/BrowserWidget";
 import ControlBar from "./components/ControlBar";
 import DischargeCalcWidget, {
@@ -29,6 +30,17 @@ const GRID_SIZE = 28;
 
 const COMPONENTS = [
     { type: "number", label: "Number", w: 4, h: 3, defaultName: "Number Widget", defaultField: "speed" },
+    {
+        type: "bitfield",
+        label: "Bitfield",
+        w: 6,
+        h: 6,
+        defaultName: "Bitfield Widget",
+        defaultField: "",
+        defaultBitNames: "",
+        defaultBitFormat: "binary",
+        defaultBitOrder: "msb-first",
+    },
     {
         type: "discharge-calc",
         label: "Discharge Calc",
@@ -106,6 +118,9 @@ function emptyPropertiesEditor() {
         constantD: 0,
         constantE: 0,
         formula: DEFAULT_DISCHARGE_FORMULA,
+        bitNames: "",
+        bitFormat: "binary",
+        bitOrder: "msb-first",
     };
 }
 
@@ -151,6 +166,15 @@ function applyWidgetDefaults(shape) {
         (out.formula === undefined || out.formula === null || out.formula === "")
     ) {
         out.formula = defaults.defaultFormula;
+    }
+    if (defaults.defaultBitNames !== undefined && (out.bitNames === undefined || out.bitNames === null)) {
+        out.bitNames = defaults.defaultBitNames;
+    }
+    if (defaults.defaultBitFormat !== undefined && (out.bitFormat === undefined || out.bitFormat === null)) {
+        out.bitFormat = defaults.defaultBitFormat;
+    }
+    if (defaults.defaultBitOrder !== undefined && (out.bitOrder === undefined || out.bitOrder === null)) {
+        out.bitOrder = defaults.defaultBitOrder;
     }
     return out;
 }
@@ -275,6 +299,18 @@ function renderComponent(shape, runtimeState = {}) {
     switch (shape.type) {
         case "number":
             return <NumberWidget shape={shape} mode={mode} csvAliases={csvAliases} onCsvAliasChange={onCsvAliasChange} />;
+        case "bitfield":
+            // Remount when the configured field changes so the in-widget
+            // dropdown picks up the new value.
+            return (
+                <BitfieldWidget
+                    key={`bitfield-${shape.id}-${shape.dataField}`}
+                    shape={shape}
+                    mode={mode}
+                    csvAliases={csvAliases}
+                    onCsvAliasChange={onCsvAliasChange}
+                />
+            );
         case "discharge-calc":
             return (
                 <DischargeCalcWidget shape={shape} mode={mode} csvAliases={csvAliases} onCsvAliasChange={onCsvAliasChange} />
@@ -931,6 +967,9 @@ function App() {
                 constantD: component.defaultConstantD ?? 0,
                 constantE: component.defaultConstantE ?? 0,
                 formula: component.defaultFormula ?? "",
+                bitNames: component.defaultBitNames ?? "",
+                bitFormat: component.defaultBitFormat ?? "binary",
+                bitOrder: component.defaultBitOrder ?? "msb-first",
             },
         ]);
         setSelectedId(id);
@@ -969,6 +1008,9 @@ function App() {
                 typeof shape.formula === "string" && shape.formula.trim()
                     ? shape.formula
                     : DEFAULT_DISCHARGE_FORMULA,
+            bitNames: typeof shape.bitNames === "string" ? shape.bitNames : "",
+            bitFormat: shape.bitFormat === "integer" ? "integer" : "binary",
+            bitOrder: shape.bitOrder === "lsb-first" ? "lsb-first" : "msb-first",
         });
     }
 
@@ -1008,6 +1050,14 @@ function App() {
                     typeof propertiesEditor.formula === "string" && propertiesEditor.formula.trim()
                         ? propertiesEditor.formula
                         : DEFAULT_DISCHARGE_FORMULA,
+            });
+        } else if (editingShape?.type === "bitfield") {
+            onUpdateShape(propertiesEditor.shapeId, {
+                name: propertiesEditor.name.trim() || "Bitfield Widget",
+                dataField: propertiesEditor.dataField.trim(),
+                bitNames: propertiesEditor.bitNames.trim(),
+                bitFormat: propertiesEditor.bitFormat === "integer" ? "integer" : "binary",
+                bitOrder: propertiesEditor.bitOrder === "lsb-first" ? "lsb-first" : "msb-first",
             });
         } else {
             onUpdateShape(propertiesEditor.shapeId, {
@@ -1076,6 +1126,7 @@ function App() {
     const editingIsKeyButton = editingShape?.type === "key-button";
     const editingIsBrowser = editingShape?.type === "browser";
     const editingIsDischargeCalc = editingShape?.type === "discharge-calc";
+    const editingIsBitfield = editingShape?.type === "bitfield";
 
     // ---------------------------------------------------------------------------
     // Render
@@ -1272,6 +1323,58 @@ function App() {
                                             mode={protocol === "csv" ? "csv" : "can"}
                                             csvAliases={csvAliases}
                                         />
+                                    ) : editingIsBitfield ? (
+                                        <>
+                                            <label htmlFor="widget-data-field">Data Field</label>
+                                            <input
+                                                id="widget-data-field"
+                                                type="text"
+                                                value={propertiesEditor.dataField}
+                                                placeholder="Data field (e.g. DigitalInputs)"
+                                                onChange={e =>
+                                                    setPropertiesEditor(curr => ({ ...curr, dataField: e.target.value }))
+                                                }
+                                            />
+                                            <label htmlFor="widget-bit-names">Bit Names</label>
+                                            <input
+                                                id="widget-bit-names"
+                                                type="text"
+                                                value={propertiesEditor.bitNames}
+                                                placeholder="e.g. Pump, Valve, Ignition"
+                                                spellCheck={false}
+                                                onChange={e =>
+                                                    setPropertiesEditor(curr => ({ ...curr, bitNames: e.target.value }))
+                                                }
+                                            />
+                                            <div className="properties-hint">
+                                                Comma-separated names in display order. Missing names fall back to
+                                                &quot;Bit N&quot;.
+                                            </div>
+                                            <label htmlFor="widget-bit-order">Bit Order</label>
+                                            <select
+                                                id="widget-bit-order"
+                                                value={propertiesEditor.bitOrder}
+                                                onChange={e =>
+                                                    setPropertiesEditor(curr => ({ ...curr, bitOrder: e.target.value }))
+                                                }
+                                            >
+                                                <option value="msb-first">
+                                                    Most significant first (left to right)
+                                                </option>
+                                                <option value="lsb-first">Least significant first (bit 0 first)</option>
+                                            </select>
+                                            <label htmlFor="widget-bit-format">Value Format</label>
+                                            <select
+                                                id="widget-bit-format"
+                                                value={propertiesEditor.bitFormat}
+                                                onChange={e =>
+                                                    setPropertiesEditor(curr => ({ ...curr, bitFormat: e.target.value }))
+                                                }
+                                            >
+                                                <option value="binary">Binary digits (e.g. 1011010)</option>
+                                                <option value="integer">Integer (e.g. 90 → 1011010)</option>
+                                            </select>
+                                        </>
                                     ) : (
                                         <>
                                             <label htmlFor="widget-data-field">Data Field</label>

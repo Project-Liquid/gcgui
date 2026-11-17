@@ -95,6 +95,16 @@ one more little feature is the "full history" button. You can see its full capab
 
 ### number
 shows a number for a given datapoint (csv and crtd)
+### bitfield
+shows a binary field (like `1011010`) as a list of named bits, each displayed as `true` for 1 or `false` for 0 (csv and crtd)
+#### options
+- bit names
+	- comma-separated names, e.g. `Pump, Valve, Ignition`. Unnamed bits fall back to `Bit N`.
+- bit order
+	- most significant first (matches the binary number left to right) or least significant first (bit 0 first).
+- value format
+	- binary digits: reads the value exactly as written, so `1011010` is seven bits.
+	- integer: converts a number to binary, so `90` becomes `1011010`.
 ### line plot 
 shows a line plot for a given datapoint over time (csv and crtd)
 #### options

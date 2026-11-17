@@ -89,7 +89,10 @@ export function createConfig(shapes, panX, panY, zoom) {
       inputC: shape.inputC,
       constantD: shape.constantD,
       constantE: shape.constantE,
-      formula: shape.formula
+      formula: shape.formula,
+      bitNames: shape.bitNames,
+      bitFormat: shape.bitFormat,
+      bitOrder: shape.bitOrder
     })),
     view: {
       panX,
@@ -132,7 +135,10 @@ export function validateConfig(config) {
     inputC: typeof shape?.inputC === 'string' ? shape.inputC : '',
     constantD: typeof shape?.constantD === 'number' && Number.isFinite(shape.constantD) ? shape.constantD : 0,
     constantE: typeof shape?.constantE === 'number' && Number.isFinite(shape.constantE) ? shape.constantE : 0,
-    formula: typeof shape?.formula === 'string' ? shape.formula : ''
+    formula: typeof shape?.formula === 'string' ? shape.formula : '',
+    bitNames: typeof shape?.bitNames === 'string' ? shape.bitNames : '',
+    bitFormat: shape?.bitFormat === 'integer' ? 'integer' : 'binary',
+    bitOrder: shape?.bitOrder === 'lsb-first' ? 'lsb-first' : 'msb-first'
   }))
   
   // Validate view settings

@@ -1073,7 +1073,7 @@ function App() {
     // ---------------------------------------------------------------------------
 
     function saveConfiguration() {
-        saveConfig(createConfig(shapes, panX, panY, zoom), "pitwall-config");
+        saveConfig(createConfig(shapes, panX, panY, zoom), "pliquidGUI-config");
     }
 
     function loadConfiguration(file) {

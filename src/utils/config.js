@@ -10,28 +10,28 @@ const CONFIG_VERSION = '1.0.0'
  * @param {Object} config - The configuration object to save
  * @param {string} filename - Optional filename (without extension)
  */
-export function saveConfig(config, filename = 'pitwall-config') {
+export function saveConfig(config, filename = 'pliquidGUI-config') {
   // Add metadata
   const configWithMeta = {
     version: CONFIG_VERSION,
     timestamp: new Date().toISOString(),
     ...config
   }
-  
+
   // Convert to JSON with pretty formatting
   const jsonString = JSON.stringify(configWithMeta, null, 2)
-  
+
   // Create blob and download
   const blob = new Blob([jsonString], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
-  
+
   const link = document.createElement('a')
   link.href = url
   link.download = `${filename}.json`
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
-  
+
   // Clean up
   URL.revokeObjectURL(url)
 }
@@ -44,7 +44,7 @@ export function saveConfig(config, filename = 'pitwall-config') {
 export async function loadConfig(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    
+
     reader.onload = (e) => {
       try {
         const config = JSON.parse(e.target.result)
@@ -53,11 +53,11 @@ export async function loadConfig(file) {
         reject(new Error('Invalid JSON file'))
       }
     }
-    
+
     reader.onerror = () => {
       reject(new Error('Failed to read file'))
     }
-    
+
     reader.readAsText(file)
   })
 }
@@ -112,12 +112,12 @@ export function validateConfig(config) {
   if (!config || typeof config !== 'object') {
     throw new Error('Invalid configuration format')
   }
-  
+
   // Check version compatibility (basic check)
   if (config.version && config.version !== CONFIG_VERSION) {
     console.warn(`Configuration version mismatch: expected ${CONFIG_VERSION}, got ${config.version}`)
   }
-  
+
   // Validate shapes
   const rawShapes = config.shapes || []
   if (!Array.isArray(rawShapes)) {
@@ -140,13 +140,13 @@ export function validateConfig(config) {
     bitFormat: shape?.bitFormat === 'integer' ? 'integer' : 'binary',
     bitOrder: shape?.bitOrder === 'lsb-first' ? 'lsb-first' : 'msb-first'
   }))
-  
+
   // Validate view settings
   const view = config.view || {}
   const panX = typeof view.panX === 'number' ? view.panX : 0
   const panY = typeof view.panY === 'number' ? view.panY : 0
   const zoom = typeof view.zoom === 'number' ? Math.max(0.5, Math.min(2, view.zoom)) : 1
-  
+
   return {
     shapes,
     view: { panX, panY, zoom }

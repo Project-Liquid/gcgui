@@ -1,6 +1,6 @@
 {
     "name": "gcgui",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "description": "ground control GUI - An Electron app for reading information over serial",
     "author": "Yale Project Liquid | Yale Undergraduate Aerospace Association",
     "main": "electron/main.js",
@@ -40,8 +40,8 @@
         "wait-on": "^9.5.1"
     },
     "build": {
-        "appId": "com.yourname.pitwall",
-        "productName": "Pitwall",
+        "appId": "com.pliq.PliquidThunder",
+        "productName": "Pliquid Thunder",
         "publish": {
             "provider": "github",
             "owner": "Project-Liquid",

@@ -16,9 +16,10 @@ export function parseBitNames(bitNames) {
  * Convert a field value into a string of binary digits.
  *
  * "binary" format interprets values exactly as written (so 1011010 is seven
- * bits, not the decimal number one million). Values that are not valid binary
- * digits fall back to integer conversion so ordinary CAN counts still work.
- * "integer" format always converts the number to base 2.
+ * bits, not the decimal number one million) and never strips leading zeros.
+ * Values that are not valid binary digits fall back to integer conversion so
+ * ordinary CAN counts still work. "integer" format converts the number to
+ * base 2.
  */
 export function toBinaryDigits(value, format = "binary") {
     if (value === null || value === undefined) return null;

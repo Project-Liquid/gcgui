@@ -103,7 +103,7 @@ shows a binary field (like `1011010`) as a list of named bits, each displayed as
 - bit order
 	- most significant first (matches the binary number left to right) or least significant first (bit 0 first).
 - value format
-	- binary digits: reads the value exactly as written, so `1011010` is seven bits.
+	- binary digits: reads the value exactly as written, so `1011010` is seven bits. Leading zeros are kept, so `0001010` stays a 7-bit array.
 	- integer: converts a number to binary, so `90` becomes `1011010`.
 ### line plot 
 shows a line plot for a given datapoint over time (csv and crtd)

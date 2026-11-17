@@ -3,8 +3,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 // A parser for comma separated values.
 // Each line is `time, value1, value2, ...` and produces fields named
 // "time" for the 0th element, then "datapoint 1", "datapoint 2", ... for
-// each element after it. Values are numeric when parseable, otherwise kept
-// as raw strings.
+// each element after it. Values are numeric when parseable, while `raw`
+// keeps the original cell text (including leading zeros).
 
 export const CSVDataContext = createContext();
 
@@ -21,7 +21,9 @@ export const parseCSVMessage = rawMessage => {
         const toField = cell => {
             if (cell === "") return { value: null, unit: "", raw: cell };
             const num = Number(cell);
-            if (!Number.isNaN(num)) return { value: num, unit: "", raw: num };
+            // Keep raw as the untouched text: a bitfield like "0001010"
+            // must retain every leading zero, not collapse to 1010.
+            if (!Number.isNaN(num)) return { value: num, unit: "", raw: cell };
             return { value: cell, unit: "", raw: cell };
         };
 

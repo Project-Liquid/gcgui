@@ -8,6 +8,14 @@ describe("bitfield helpers", () => {
         expect(toBinaryDigits("0b1010", "binary")).toBe("1010");
     });
 
+    it("never strips leading zeros", () => {
+        expect(toBinaryDigits("0001010", "binary")).toBe("0001010");
+        expect(toBinaryDigits("000", "binary")).toBe("000");
+        const rows = buildBitRows("0001010", parseBitNames(""), "msb-first");
+        expect(rows).toHaveLength(7);
+        expect(rows.filter(row => row.active).map(row => row.bitIndex)).toEqual([3, 1]);
+    });
+
     it("falls back to integer conversion for non-binary values", () => {
         expect(toBinaryDigits("13", "binary")).toBe("1101");
         expect(toBinaryDigits(90, "integer")).toBe("1011010");

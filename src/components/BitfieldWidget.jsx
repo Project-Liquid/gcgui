@@ -92,28 +92,14 @@ export default function BitfieldWidget({ shape, mode = "can", csvAliases = DEFAU
                 </div>
             )}
 
-            <div className="widget-controls">
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                    <label htmlFor={`field-select-${shape.id}`} style={{ fontSize: "11px", color: "#888", display: "block" }}>
-                        Select Field:
-                    </label>
-                    {isCSV && (
-                        <CsvAliasEditor fields={selectOptions} aliases={csvAliases} onAliasChange={onCsvAliasChange} />
-                    )}
-                </div>
+            <div className="bitfield-controls">
                 <select
                     id={`field-select-${shape.id}`}
+                    className="bitfield-select"
+                    aria-label="Field"
+                    title="Select field"
                     value={effectiveField}
                     onChange={e => setSelectedField(e.target.value)}
-                    style={{
-                        width: "100%",
-                        padding: "6px 8px",
-                        borderRadius: "6px",
-                        border: "1px solid #444",
-                        background: "#2a2a2a",
-                        color: "#fff",
-                        fontSize: "12px",
-                    }}
                 >
                     {selectOptions.map(field => (
                         <option key={field} value={field}>
@@ -121,6 +107,7 @@ export default function BitfieldWidget({ shape, mode = "can", csvAliases = DEFAU
                         </option>
                     ))}
                 </select>
+                {isCSV && <CsvAliasEditor fields={selectOptions} aliases={csvAliases} onAliasChange={onCsvAliasChange} />}
             </div>
         </div>
     );
